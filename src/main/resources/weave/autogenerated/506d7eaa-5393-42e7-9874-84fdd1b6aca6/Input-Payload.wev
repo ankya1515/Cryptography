@@ -1,0 +1,5 @@
+%dw 2.0
+
+type auto_506d7eaa_5393_42e7_9874_84fdd1b6aca6_Input_Payload = Array<{  empid: String,   previousemployer: String,   firstname: String,   address2: String,   phone: Number,   dateofjoining: String,   address1: String,   deptid: String,   middlename: String,   designation: String,   salary: Number,   lastname: String,   _?: Any} {"description": "These are the fields for Employee",
+"label": "Employee Details"}>
+

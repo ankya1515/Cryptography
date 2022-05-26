@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:crypto="http://www.mulesoft.org/schema/mule/crypto"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/crypto http://www.mulesoft.org/schema/mule/crypto/current/mule-crypto.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="38db795e-eb2a-4ce5-925a-3fcf37016d41" >
+		<http:request-connection host="localhost" port="8081" />
+	</http:request-config>
+	<flow name="GET_5_crypto_process_implementationFlow" doc:id="b1be89f0-d706-4c8c-b230-1e7d12647f15" >
+		<http:request method="GET" doc:name="get_empid" doc:id="b0a1c4da-106f-4c73-9a57-40a0c2d4fcbc" config-ref="HTTP_Request_configuration" path="/api/empdetails/{empid}">
+			<http:uri-params ><![CDATA[#[{
+	empid: attributes.uriParams.empid
+}]]]></http:uri-params>
+		</http:request>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="9e5fd2b3-5f05-425a-9758-318a931f29e0" type="ANY">
+				<ee:transform doc:name="Transform Message" doc:id="f7cbe2d4-c45c-4aaa-8cd7-8adcf1e6816d" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"Error Message": "Records were not found for this Emp ID."
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+	<flow name="POST_5_crypto_process_implementationFlow" doc:id="506d7eaa-5393-42e7-9874-84fdd1b6aca6" >
+		<crypto:jce-encrypt-pbe doc:name="Jce encrypt pbe" doc:id="cebe4b43-e625-4e25-b50b-676020f2fb45" password="mulesoft"/>
+		<logger level="INFO" doc:name="Logger" doc:id="ee0b9714-d0df-4e47-b63a-c3238a443cc8" message="Encrypted Message is : #[payload]"/>
+		<ee:transform doc:name="Converting to BASE64" doc:id="f69269ba-1f36-4851-b88e-4b46afad32ac" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+import dw::Crypto
+import toBase64 from dw::core::Binaries
+output application/json
+---
+toBase64(payload)]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<http:request method="POST" doc:name="POST Request" doc:id="e8286f91-12be-471d-a6d0-3a3623982c6e" config-ref="HTTP_Request_configuration" path="/api/empdetails"/>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="b884a0a0-1ac9-43ac-831d-94843316813a" type="ANY">
+				<ee:transform doc:name="Transform Message" doc:id="00c43307-512c-4913-ae7f-bf1b0cd6980a" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"Error Message": error.muleMessage.typedValue
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+</mule>

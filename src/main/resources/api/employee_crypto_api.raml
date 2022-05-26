@@ -1,0 +1,35 @@
+#%RAML 1.0
+title: Employee_Crypto_API
+
+types:
+  employeedatatype: !include Datatypes/EmployeeDataType.raml
+
+/empdetails:
+  /{empid}:
+    displayName: Employee ID
+    get:
+      responses:
+        200:
+          description: Success
+          body:
+            application/json:
+              type: any
+              examples:
+                output: !include Examples/empdetails_get_example.raml
+        400:
+          body:
+            application/json:
+              example:
+                message: Error retrieving data
+  post:
+    body:
+      application/json:
+        type: any
+        examples:
+          input: !include Examples/empdetails_post_example.raml
+    responses:
+      201:
+        body:
+          application/json:
+            example:
+              message: Records has been added successfully.
